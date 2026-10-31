@@ -24,11 +24,11 @@ short that speech recognition will not confuse with a real contact.
 
 ## Status
 
-Typed messages to the bot work end to end: photo plus question answered in
-about 7 seconds, a plain question in about 4. Sending the same messages from
-the glasses by voice depends on the Meta AI app picking up the new contact from
-your address book, which is still being verified on real hardware. If the
-glasses say they cannot find the contact, see [Limits](#limits).
+Verified on real glasses: a question spoken to the glasses reaches the bot and
+the answer is read aloud, in about 6 seconds for general knowledge and about
+12 when it needs a web search (weather, news, opening hours). Photo questions
+are verified with typed messages (about 7 seconds); by voice they are next. If
+the glasses say they cannot find the contact, see [Limits](#limits).
 
 ## How it works
 
@@ -151,12 +151,13 @@ certificates.
 | `GLASSES_PHOTO_WAIT` | `20` | seconds a photo waits for its question |
 | `GLASSES_PAIR_WINDOW` | `90` | a question this soon after a photo is about that photo |
 | `GLASSES_POLL` | `2` | seconds between pulls from the relay |
+| `GLASSES_WEB_SEARCH` | `1` | live web search when the question needs current facts; `0` turns it off |
 | `GLASSES_MODEL` / `GLASSES_EFFORT` | Codex default / `low` | model and reasoning effort |
 
 ## What leaves the Mac
 
 The photo and the question travel through WhatsApp and Meta's Cloud API, wait
-in the relay until the Mac collects them, and go to OpenAI through `codex exec`.
+in the relay until the Mac collects them, and go to OpenAI through `codex exec`, which may run a web search for questions about current facts.
 The relay deletes each message once the bridge acknowledges it. The Mac writes
 nothing to disk but the bridge log. See [SECURITY.md](SECURITY.md).
 
@@ -177,7 +178,7 @@ nothing to disk but the bridge log. See [SECURITY.md](SECURITY.md).
 ## Tests
 
 ```
-cd server && python3 -m unittest test_bridge     # pairing, media, replies
+cd server && python3 -m unittest test_bridge test_server   # pairing, media, replies, speakable text
 node --test relay/worker.test.mjs               # signature, allow-list, dedup, pull and ack
 ```
 

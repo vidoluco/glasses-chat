@@ -10,6 +10,7 @@ so a burst of taps cannot drain the plan's limits.
 import base64
 import json
 import os
+import re
 import secrets
 import subprocess
 import sys
@@ -28,14 +29,27 @@ MAX_BODY = 8 * 1024 * 1024
 
 # the answer is read aloud by the glasses, so it follows the language the user speaks
 LANGUAGE = os.environ.get("GLASSES_LANGUAGE", "the same language as the question")
+# live web search for weather, news, opening hours; roughly doubles the answer time when used
+WEB_SEARCH = os.environ.get("GLASSES_WEB_SEARCH", "1") != "0"
 
 PROMPT = """You are the voice assistant inside a pair of smart glasses. The photo, if there \
-is one, is what the user is looking at right now.
+is one, is what the user is looking at right now. Today is {today}.
 Answer in {language}, in one or two short, natural sentences meant to be spoken aloud: \
-no markdown, no lists, no emoji. If the question is not about the photo, just answer \
-it. Do not use tools and do not read files.
+no markdown, no lists, no emoji, no links, no sources. If the question is not about the \
+photo, just answer it. {search}Do not read or write files.
 
 Question: {question}"""
+SEARCH_HINT = "Search the web only when the answer depends on current information. "
+
+LINK = re.compile(r"\(?\[([^\]]*)\]\([^)]*\)\)?")  # [text](url), optionally wrapped in ( )
+URL = re.compile(r"\(?https?://\S+\)?")
+
+
+def speakable(text):
+    """Strip what a voice cannot read: markdown links, bare URLs, emphasis marks."""
+    text = LINK.sub(lambda m: "" if m.group(0).startswith("(") else m.group(1), text)
+    text = URL.sub("", text).replace("**", "").replace("__", "")
+    return re.sub(r"\s+([.,;:!?])", r"\1", re.sub(r"[ \t]{2,}", " ", text)).strip()
 
 LOCK = threading.Lock()
 
@@ -51,18 +65,22 @@ def load_token():
 def ask_codex(question, image_bytes):
     with tempfile.TemporaryDirectory(prefix="glasses-") as tmp:
         out = Path(tmp) / "answer.txt"
-        cmd = ["codex", "exec", "--skip-git-repo-check", "--ephemeral", "-s", "read-only",
+        # --search is a top-level codex flag, it has to come before the exec subcommand
+        cmd = ["codex"] + (["--search"] if WEB_SEARCH else []) + [
+               "exec", "--skip-git-repo-check", "--ephemeral", "-s", "read-only",
                "-C", tmp, "-o", str(out), "-c", f'model_reasoning_effort="{EFFORT}"']
         if MODEL:
             cmd += ["-m", MODEL]
         # the prompt goes before -i, which takes several files
-        cmd.append(PROMPT.format(language=LANGUAGE, question=question or "What am I looking at?"))
+        cmd.append(PROMPT.format(language=LANGUAGE, today=time.strftime("%A %d %B %Y"),
+                                 search=SEARCH_HINT if WEB_SEARCH else "",
+                                 question=question or "What am I looking at?"))
         if image_bytes:
             img = Path(tmp) / "view.jpg"
             img.write_bytes(image_bytes)
             cmd += ["-i", str(img)]
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=TIMEOUT, stdin=subprocess.DEVNULL)
-        answer = out.read_text().strip() if out.exists() else ""
+        answer = speakable(out.read_text()) if out.exists() else ""
         if r.returncode != 0 or not answer:
             raise RuntimeError((r.stderr or r.stdout).strip()[-400:] or f"codex exit {r.returncode}")
         return answer
