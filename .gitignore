@@ -1,0 +1,5 @@
+__pycache__/
+.wrangler/
+app/*.xcodeproj
+app/Local.xcconfig
+node_modules/
