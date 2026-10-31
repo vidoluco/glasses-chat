@@ -34,14 +34,14 @@ WEB_SEARCH = os.environ.get("GLASSES_WEB_SEARCH", "1") != "0"
 
 PROMPT = """You are the voice assistant inside a pair of smart glasses. The photo, if there \
 is one, is what the user is looking at right now. Today is {today}.
-Answer in {language}, in ONE short sentence of at most 15 words, meant to be spoken \
+Answer in {language}, in ONE short sentence of at most 20 words, meant to be spoken \
 aloud: no markdown, no lists, no emoji, no links, no sources. Give only the key fact. \
 If the question is not about the photo, just answer it. {search}Do not read or write files.
 
 Question: {question}"""
 SEARCH_HINT = "Search the web only when the answer depends on current information. "
 # above some length the glasses only say "a long message" instead of reading it
-MAX_CHARS = int(os.environ.get("GLASSES_MAX_CHARS", "100"))
+MAX_CHARS = int(os.environ.get("GLASSES_MAX_CHARS", "130"))
 
 LINK = re.compile(r"\(?\[([^\]]*)\]\([^)]*\)\)?")  # [text](url), optionally wrapped in ( )
 URL = re.compile(r"\(?https?://\S+\)?")

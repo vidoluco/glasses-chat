@@ -151,7 +151,7 @@ certificates.
 | `GLASSES_PHOTO_WAIT` | `20` | seconds a photo waits for its question |
 | `GLASSES_PAIR_WINDOW` | `90` | a question this soon after a photo is about that photo |
 | `GLASSES_POLL` | `2` | seconds between pulls from the relay |
-| `GLASSES_MAX_CHARS` | `100` | longer answers are cut to the first sentence: past some length the glasses only announce "a long message" |
+| `GLASSES_MAX_CHARS` | `130` | longer answers are cut to the first sentence: measured on Ray-Ban Meta Gen 2, 130 characters are read aloud and 160 are only announced as "a long message" |
 | `GLASSES_WEB_SEARCH` | `1` | live web search when the question needs current facts; `0` turns it off |
 | `GLASSES_MODEL` / `GLASSES_EFFORT` | Codex default / `low` | model and reasoning effort |
 

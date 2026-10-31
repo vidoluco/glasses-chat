@@ -2,7 +2,7 @@
 
 ## 0.2.0 - 2026-10-31
 
-- One sentence of at most 15 words, capped at `GLASSES_MAX_CHARS` (100): longer replies make the glasses announce "a long message" instead of reading it.
+- One sentence of at most 20 words, capped at `GLASSES_MAX_CHARS` (130). Measured on the glasses: 130 characters are read aloud, 160 are only announced as "a long message".
 - Live web search through `codex --search` for questions about current facts, off with `GLASSES_WEB_SEARCH=0`.
 - Answers are cleaned for speech: markdown links, bare URLs and emphasis marks are removed.
 - The prompt carries today's date.
