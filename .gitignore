@@ -1,5 +1,4 @@
-__pycache__/
-.wrangler/
-app/*.xcodeproj
-app/Local.xcconfig
 node_modules/
+.wrangler/
+__pycache__/
+.DS_Store

@@ -26,13 +26,16 @@ TIMEOUT = int(os.environ.get("GLASSES_TIMEOUT", "60"))
 TOKEN_FILE = Path.home() / ".config/glasses-chat/token"
 MAX_BODY = 8 * 1024 * 1024
 
-PROMPT = """Sei l'assistente vocale dentro un paio di occhiali smart. La foto, se c'e', \
-e' quello che l'utente sta guardando in questo momento.
-Rispondi in italiano, in una o due frasi brevi e naturali da dire ad alta voce: \
-niente markdown, niente elenchi, niente emoji. Se la domanda non riguarda la foto, \
-rispondi alla domanda e basta. Non usare strumenti e non leggere file.
+# the answer is read aloud by the glasses, so it follows the language the user speaks
+LANGUAGE = os.environ.get("GLASSES_LANGUAGE", "the same language as the question")
 
-Domanda: {question}"""
+PROMPT = """You are the voice assistant inside a pair of smart glasses. The photo, if there \
+is one, is what the user is looking at right now.
+Answer in {language}, in one or two short, natural sentences meant to be spoken aloud: \
+no markdown, no lists, no emoji. If the question is not about the photo, just answer \
+it. Do not use tools and do not read files.
+
+Question: {question}"""
 
 LOCK = threading.Lock()
 
@@ -53,7 +56,7 @@ def ask_codex(question, image_bytes):
         if MODEL:
             cmd += ["-m", MODEL]
         # the prompt goes before -i, which takes several files
-        cmd.append(PROMPT.format(question=question or "Cosa sto guardando?"))
+        cmd.append(PROMPT.format(language=LANGUAGE, question=question or "What am I looking at?"))
         if image_bytes:
             img = Path(tmp) / "view.jpg"
             img.write_bytes(image_bytes)
@@ -100,7 +103,7 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, KeyError) as e:
             return self._send(400, {"error": f"json: {e}"})
         if not LOCK.acquire(blocking=False):
-            return self._send(429, {"error": "busy", "answer": "Sto ancora rispondendo alla domanda di prima."})
+            return self._send(429, {"error": "busy", "answer": "Still answering the previous question."})
         t0 = time.monotonic()
         try:
             answer = ask_codex(req.get("question", "").strip(), image)
@@ -108,10 +111,10 @@ class Handler(BaseHTTPRequestHandler):
             self.log_message("ok %.1fs q=%r", secs, req.get("question", "")[:60])
             self._send(200, {"answer": answer, "seconds": secs})
         except subprocess.TimeoutExpired:
-            self._send(504, {"error": "timeout", "answer": "Non sono riuscito a rispondere in tempo."})
+            self._send(504, {"error": "timeout", "answer": "I could not answer in time."})
         except Exception as e:  # surface the reason to the app, it reads it aloud only in debug
             self.log_message("error %s", e)
-            self._send(502, {"error": str(e), "answer": "C'e' stato un problema con ChatGPT."})
+            self._send(502, {"error": str(e), "answer": "Something went wrong with the model."})
         finally:
             LOCK.release()
 

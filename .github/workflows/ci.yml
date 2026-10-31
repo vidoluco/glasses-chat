@@ -1,0 +1,39 @@
+name: CI
+
+# What CI can and cannot prove for this repo.
+#
+# It CAN prove: the bridge pairs photos and questions, downloads media and
+# replies as specified, and the relay verifies Meta's signature, keeps one
+# sender, drops retries and empties its queue on ack.
+#
+# It CANNOT prove: anything that needs a real WhatsApp number, the glasses,
+# a deployed Worker or a signed-in Codex CLI. Those are checked by hand.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - name: bridge
+        working-directory: server
+        run: python -m unittest -v test_bridge
+      - name: relay
+        run: node --test relay/worker.test.mjs

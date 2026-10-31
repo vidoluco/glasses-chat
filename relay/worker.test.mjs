@@ -44,11 +44,11 @@ test("webhook verification echoes the challenge only with the right token", asyn
 
 test("a signed message from the owner is stored, pulled, then acked away", async () => {
   const e = env();
-  const res = await worker.fetch(signed(JSON.stringify(payload({ id: "wamid.1", from: ME, type: "text", text: { body: "ciao" } }))), e);
+  const res = await worker.fetch(signed(JSON.stringify(payload({ id: "wamid.1", from: ME, type: "text", text: { body: "hello" } }))), e);
   assert.equal(res.status, 200);
   const { messages } = await (await pull(e)).json();
   assert.equal(messages.length, 1);
-  assert.equal(messages[0].text.body, "ciao");
+  assert.equal(messages[0].text.body, "hello");
   assert.match(messages[0].id, /^m:/);
   await worker.fetch(new Request("https://relay/ack", { method: "POST", headers: { Authorization: "Bearer pull-me" }, body: JSON.stringify({ ids: [messages[0].id] }) }), e);
   assert.deepEqual((await (await pull(e)).json()).messages, []);
@@ -63,7 +63,7 @@ test("a bad signature is rejected and nothing is stored", async () => {
 
 test("Meta retries do not duplicate a message", async () => {
   const e = env();
-  const body = JSON.stringify(payload({ id: "wamid.3", from: ME, type: "text", text: { body: "una volta" } }));
+  const body = JSON.stringify(payload({ id: "wamid.3", from: ME, type: "text", text: { body: "once" } }));
   await worker.fetch(signed(body), e);
   await worker.fetch(signed(body), e);
   assert.equal((await (await pull(e)).json()).messages.length, 1);

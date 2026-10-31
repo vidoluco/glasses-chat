@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""WhatsApp bridge: the glasses send a photo and a question to the HeyChat contact,
+"""WhatsApp bridge: the glasses send a photo and a question to the bot's contact,
 this answers on WhatsApp and the glasses read the reply aloud.
 
 The Mac never accepts inbound connections: Meta calls the relay (relay/worker.js),
@@ -19,13 +19,13 @@ from server import ask_codex
 CONFIG_FILE = Path(os.environ.get("GLASSES_WA_CONFIG", Path.home() / ".config/glasses-chat/whatsapp.json"))
 GRAPH = os.environ.get("GLASSES_GRAPH", "https://graph.facebook.com")  # overridden by the e2e test
 POLL_SECONDS = float(os.environ.get("GLASSES_POLL", "2"))
-# "Hey Meta, take a photo and send it to HeyChat" and the spoken question arrive as
+# "Hey Meta, take a photo and send it to Tony" and the spoken question arrive as
 # two messages: a photo waits this long for its question, then gets a default one.
 PHOTO_WAIT = float(os.environ.get("GLASSES_PHOTO_WAIT", "20"))
 # a question this soon after a photo is about that photo
 PAIR_WINDOW = float(os.environ.get("GLASSES_PAIR_WINDOW", "90"))
-DEFAULT_QUESTION = "Cosa sto guardando?"
-UNSUPPORTED = "Mandami una foto o un messaggio scritto, i vocali non li ascolto ancora."
+DEFAULT_QUESTION = "What am I looking at?"
+UNSUPPORTED = "Send me a photo or a text message. I cannot listen to voice notes yet."
 
 
 class Pairer:
@@ -87,8 +87,10 @@ class Relay:
         self.token = token
 
     def _call(self, path, data=None):
+        # Cloudflare answers 403 to the default Python-urllib user agent
         req = urllib.request.Request(f"{self.url}{path}", data=data,
-                                     headers={"Authorization": f"Bearer {self.token}"})
+                                     headers={"Authorization": f"Bearer {self.token}",
+                                              "User-Agent": "glasses-chat-bridge/1"})
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.loads(r.read())
 
@@ -119,7 +121,7 @@ def answer(job, wa, ask=ask_codex):
         reply = ask(question, image)
     except Exception as e:
         print(f"error {e}", file=sys.stderr, flush=True)
-        reply = "C'e' stato un problema con ChatGPT, riprova."
+        reply = "Something went wrong with the model, try again."
     wa.send(sender, reply)
     print(f"ok {time.monotonic() - t0:.1f}s photo={image is not None} q={question[:60]!r}",
           file=sys.stderr, flush=True)
