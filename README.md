@@ -86,9 +86,19 @@ behind them.
 create an app with the "Connect with customers through WhatsApp" use case. Under
 API Setup note the test number's *Phone number ID*, add your own number as a
 recipient, and generate an access token. Note the *App Secret* under App
-settings > Basic. The token from API Setup lasts 24 hours; for daily use create
-a system user in Business Settings and give it a token with
-`whatsapp_business_messaging`.
+settings > Basic. The token from API Setup lasts 24 hours. A system user token
+does not work with the test number (Meta answers `#10 Viewer cannot access the
+provided Paid Message Account`), so for daily use get a user token with
+`whatsapp_business_messaging` and `whatsapp_business_management` from the Graph
+API Explorer and exchange it for a 60-day one:
+
+```
+curl -G https://graph.facebook.com/v25.0/oauth/access_token \
+  -d grant_type=fb_exchange_token -d client_id=$APP_ID \
+  --data-urlencode client_secret=$APP_SECRET --data-urlencode fb_exchange_token=$SHORT_TOKEN
+```
+
+A permanent system user token needs a real phone number on the account.
 
 **2. Relay.**
 
