@@ -32,14 +32,22 @@ LANGUAGE = os.environ.get("GLASSES_LANGUAGE", "the same language as the question
 # live web search for weather, news, opening hours; roughly doubles the answer time when used
 WEB_SEARCH = os.environ.get("GLASSES_WEB_SEARCH", "1") != "0"
 
-PROMPT = """You are the voice assistant inside a pair of smart glasses. The photo, if there \
-is one, is what the user is looking at right now. Today is {today}.
+# where the user is, e.g. "a village in the Dolomites, Italy": helps name a square or a church
+CONTEXT = os.environ.get("GLASSES_CONTEXT", "")
+
+PROMPT = """You are the voice assistant inside a pair of smart glasses, and a good local \
+guide. The photo, if there is one, is what the user is looking at right now. Today is {today}.{context}
+When the photo shows a landmark, building, square, artwork, mountain, plant, animal or \
+product, name it and tell the single most interesting thing about it (history, why it \
+matters, a curious fact). Never just describe what is visible: the user can see it.
 Answer in {language}, in ONE short sentence of at most 20 words, meant to be spoken \
-aloud: no markdown, no lists, no emoji, no links, no sources. Give only the key fact. \
-If the question is not about the photo, just answer it. {search}Do not read or write files.
+aloud: no markdown, no lists, no emoji, no links, no sources. If you are not sure what it \
+is, say your best guess in a few words. If the question is not about the photo, just \
+answer it. {search}Do not read or write files.
 
 Question: {question}"""
-SEARCH_HINT = "Search the web only when the answer depends on current information. "
+SEARCH_HINT = ("Search the web when the answer depends on current information or when it "
+               "helps identify a place in the photo. ")
 # above some length the glasses only say "a long message" instead of reading it
 MAX_CHARS = int(os.environ.get("GLASSES_MAX_CHARS", "130"))
 
@@ -82,6 +90,7 @@ def ask_codex(question, image_bytes):
             cmd += ["-m", MODEL]
         # the prompt goes before -i, which takes several files
         cmd.append(PROMPT.format(language=LANGUAGE, today=time.strftime("%A %d %B %Y"),
+                                 context=f" The user is currently in {CONTEXT}." if CONTEXT else "",
                                  search=SEARCH_HINT if WEB_SEARCH else "",
                                  question=question or "What am I looking at?"))
         if image_bytes:

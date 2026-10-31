@@ -17,7 +17,7 @@ key, no port open on the Mac.
 |---|---|
 | "Hey Meta, take a photo and send it to Tony" | the photo waits up to 20 seconds for its question |
 | "Hey Meta, send a message to Tony saying what plant is this?" | answered about the photo if it came in the last 90 seconds, otherwise as plain text |
-| a photo and nothing else | after 20 seconds it answers "What am I looking at?" |
+| a photo and nothing else | after 20 seconds it names what you are looking at and tells you one interesting thing about it |
 
 "Tony" is just the name you give the bot in your address book. Pick something
 short that speech recognition will not confuse with a real contact.
@@ -147,6 +147,7 @@ certificates.
 | Variable | Default | |
 |---|---|---|
 | `GLASSES_LANGUAGE` | the language of the question | language of the spoken answer |
+| `GLASSES_CONTEXT` | empty | where you are, e.g. `a village in the Dolomites, Italy`: helps name a square or a church |
 | `GLASSES_PHOTO_WAIT` | `20` | seconds a photo waits for its question |
 | `GLASSES_PAIR_WINDOW` | `90` | a question this soon after a photo is about that photo |
 | `GLASSES_POLL` | `2` | seconds between pulls from the relay |

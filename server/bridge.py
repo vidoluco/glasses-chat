@@ -24,7 +24,7 @@ POLL_SECONDS = float(os.environ.get("GLASSES_POLL", "2"))
 PHOTO_WAIT = float(os.environ.get("GLASSES_PHOTO_WAIT", "20"))
 # a question this soon after a photo is about that photo
 PAIR_WINDOW = float(os.environ.get("GLASSES_PAIR_WINDOW", "90"))
-DEFAULT_QUESTION = "What am I looking at?"
+DEFAULT_QUESTION = "What is this? Tell me something interesting about it."
 UNSUPPORTED = "Send me a photo or a text message. I cannot listen to voice notes yet."
 
 

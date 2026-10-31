@@ -2,6 +2,7 @@
 
 ## 0.2.0 - 2026-10-31
 
+- Guide mode: a photo of a landmark, building, artwork, plant or animal gets its name and one interesting fact, not a description. `GLASSES_CONTEXT` tells the model where you are.
 - One sentence of at most 20 words, capped at `GLASSES_MAX_CHARS` (130). Measured on the glasses: 130 characters are read aloud, 160 are only announced as "a long message".
 - Live web search through `codex --search` for questions about current facts, off with `GLASSES_WEB_SEARCH=0`.
 - Answers are cleaned for speech: markdown links, bare URLs and emphasis marks are removed.
