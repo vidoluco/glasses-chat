@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Setup: a system user token cannot reach Meta's test number, so the README now shows how to get a 60-day user token with `fb_exchange_token`.
+
 ## 0.2.0 - 2026-10-31
 
 - Guide mode: a photo of a landmark, building, artwork, plant or animal gets its name and one interesting fact, not a description. `GLASSES_CONTEXT` tells the model where you are.
