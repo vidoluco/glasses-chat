@@ -34,22 +34,31 @@ WEB_SEARCH = os.environ.get("GLASSES_WEB_SEARCH", "1") != "0"
 
 PROMPT = """You are the voice assistant inside a pair of smart glasses. The photo, if there \
 is one, is what the user is looking at right now. Today is {today}.
-Answer in {language}, in one or two short, natural sentences meant to be spoken aloud: \
-no markdown, no lists, no emoji, no links, no sources. If the question is not about the \
-photo, just answer it. {search}Do not read or write files.
+Answer in {language}, in ONE short sentence of at most 15 words, meant to be spoken \
+aloud: no markdown, no lists, no emoji, no links, no sources. Give only the key fact. \
+If the question is not about the photo, just answer it. {search}Do not read or write files.
 
 Question: {question}"""
 SEARCH_HINT = "Search the web only when the answer depends on current information. "
+# above some length the glasses only say "a long message" instead of reading it
+MAX_CHARS = int(os.environ.get("GLASSES_MAX_CHARS", "100"))
 
 LINK = re.compile(r"\(?\[([^\]]*)\]\([^)]*\)\)?")  # [text](url), optionally wrapped in ( )
 URL = re.compile(r"\(?https?://\S+\)?")
 
 
-def speakable(text):
-    """Strip what a voice cannot read: markdown links, bare URLs, emphasis marks."""
+def speakable(text, max_chars=MAX_CHARS):
+    """Strip what a voice cannot read (markdown links, bare URLs, emphasis marks) and keep
+    the answer short enough that the glasses read it instead of announcing a long message."""
     text = LINK.sub(lambda m: "" if m.group(0).startswith("(") else m.group(1), text)
     text = URL.sub("", text).replace("**", "").replace("__", "")
-    return re.sub(r"\s+([.,;:!?])", r"\1", re.sub(r"[ \t]{2,}", " ", text)).strip()
+    text = re.sub(r"\s+([.,;:!?])", r"\1", re.sub(r"\s+", " ", text)).strip()
+    if len(text) <= max_chars:
+        return text
+    first = re.split(r"(?<=[.!?])\s", text, maxsplit=1)[0]
+    if len(first) <= max_chars:
+        return first
+    return first[:max_chars].rsplit(" ", 1)[0].rstrip(",;:") + "."
 
 LOCK = threading.Lock()
 

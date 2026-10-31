@@ -20,6 +20,17 @@ class SpeakableTest(unittest.TestCase):
     def test_emphasis_marks_are_removed(self):
         self.assertEqual(speakable("It is **very** cold."), "It is very cold.")
 
+    def test_long_answer_keeps_the_first_sentence(self):
+        raw = ("Today in Borca di Cadore, expect sunshine with some clouds and a high around 11 degrees. "
+               "It'll be cold this evening, with temperatures dropping close to freezing.")
+        self.assertEqual(speakable(raw), "Today in Borca di Cadore, expect sunshine with some clouds "
+                                         "and a high around 11 degrees.")
+
+    def test_long_single_sentence_is_cut_at_a_word(self):
+        out = speakable("word " * 40, max_chars=30)
+        self.assertLessEqual(len(out), 31)
+        self.assertTrue(out.endswith("word."))
+
     def test_plain_answer_is_unchanged(self):
         self.assertEqual(speakable("Seven times eight is fifty-six."), "Seven times eight is fifty-six.")
 
