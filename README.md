@@ -24,11 +24,10 @@ short that speech recognition will not confuse with a real contact.
 
 ## Status
 
-Verified on real glasses: a question spoken to the glasses reaches the bot and
-the answer is read aloud, in about 6 seconds for general knowledge and about
-12 when it needs a web search (weather, news, opening hours). Photo questions
-are verified with typed messages (about 7 seconds); by voice they are next. If
-the glasses say they cannot find the contact, see [Limits](#limits).
+Verified on real Ray-Ban Meta glasses, by voice: photos answered in about 8
+seconds, general questions in about 6, questions that need a web search
+(weather, news, opening hours) in about 12 to 16. If the glasses say they
+cannot find the contact, see [Limits](#limits).
 
 ## How it works
 
